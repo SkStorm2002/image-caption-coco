@@ -9,11 +9,12 @@ import numpy as np
 from tqdm import tqdm
 import random
 import json
+from torch.utils.data import DataLoader, Subset
 def get_loader(transform,
                mode='train',
                batch_size=1,
                vocab_threshold=None,
-               vocab_file='/Users/shreykamoji/Image_Captioning_final/vocab.pkl',
+               vocab_file='/home/sujeet-pg/whisper/sus/image-caption-coco/vocab.pkl',
                start_word="<start>",
                end_word="<end>",
                unk_word="<unk>",
@@ -42,16 +43,14 @@ def get_loader(transform,
     # Based on mode (train, val, test), obtain img_folder and annotations_file.
     if mode == 'train':
         if vocab_from_file==True: assert os.path.exists(vocab_file), "vocab_file does not exist.  Change vocab_from_file to False to create vocab_file."
-        img_folder = '/Users/shreykamoji/Image_Captioning_final/data/train2014'
-        annotations_file = '/Users/shreykamoji/Image_Captioning_final/data/annotations/captions_train2014.json'
-    # if mode == 'test':
-    #     assert batch_size==1, "Please change batch_size to 1 if testing your model."
-    #     assert os.path.exists(vocab_file), "Must first generate vocab.pkl from training data."
-    #     assert vocab_from_file==True, "Change vocab_from_file to True."
-    #     # img_folder = os.path.join(cocoapi_loc, 'cocoapi/images/test2014/')
-    #     img_folder = os.path.join(cocoapi_loc, 'cocoapi/images/test2014/')
-    #
-    #     annotations_file = os.path.join(cocoapi_loc, 'cocoapi/annotations/image_info_test2014.json')
+        img_folder = '/home/sujeet-pg/whisper/sus/image-caption-coco/data/train2014'
+        annotations_file = '/home/sujeet-pg/whisper/sus/image-caption-coco/data/annotations/captions_train2014.json'
+    if mode == 'test':
+        assert batch_size==1, "Please change batch_size to 1 if testing your model."
+        assert os.path.exists(vocab_file), "Must first generate vocab.pkl from training data."
+        assert vocab_from_file==True, "Change vocab_from_file to True."
+        img_folder = '/home/sujeet-pg/whisper/sus/image-caption-coco/data/val2014'
+        annotations_file = '/home/sujeet-pg/whisper/sus/image-caption-coco/data/annotations/captions_val2014.json'
 
     # COCO caption dataset.
     dataset = CoCoDataset(transform=transform,
@@ -71,6 +70,7 @@ def get_loader(transform,
         indices = dataset.get_train_indices()
         # Create and assign a batch sampler to retrieve a batch with the sampled indices.
         initial_sampler = data.sampler.SubsetRandomSampler(indices=indices)
+
         # data loader for COCO dataset.
         data_loader = data.DataLoader(dataset=dataset, 
                                       num_workers=num_workers,
